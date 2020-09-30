@@ -21,7 +21,9 @@ const App = () => {
 				onClose={() => setOpen("")}
 				isModal
 			>
-				<div style={{ padding: "20px 20px 500px" }}>Swipe up and down</div>
+				<div style={{ padding: "20px 20px 500px", color: "#fff" }}>
+					<p>Swipe up and down</p>
+				</div>
 			</BottomSheet>
 		</>
 	);

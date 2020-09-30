@@ -18,6 +18,7 @@ const Sheet = ({ children, onClose, onClick, isModal, ...props }) => {
 	const [isExpandable, setExpandable] = useState(false);
 	const [isExpanded, setExpanded] = useState(false);
 	const [mounted, setMounted] = useState(false);
+	const [size, setSize] = useState(null);
 	const controls = useAnimation();
 	const bodyRef = useRef();
 
@@ -76,6 +77,7 @@ const Sheet = ({ children, onClose, onClick, isModal, ...props }) => {
 
 			if (shouldExpand && isExpandable) {
 				controls.start("expand");
+				setSize("expand");
 				setExpanded(true);
 			} else {
 				if (
@@ -85,14 +87,18 @@ const Sheet = ({ children, onClose, onClick, isModal, ...props }) => {
 				) {
 					if (!isModal) {
 						controls.start("hidden");
+						setSize("hidden");
 						onClose();
 					} else {
 						controls.start("small");
+						setSize("small");
 					}
 				} else if (shouldClose) {
 					controls.start("small");
+					setSize("small");
 				} else {
 					controls.start("visible");
+					setSize("visible");
 				}
 				setExpanded(false);
 			}
@@ -113,6 +119,7 @@ const Sheet = ({ children, onClose, onClick, isModal, ...props }) => {
 				controls.start(() => ({
 					y: bodyRect.height - window.innerHeight / 2
 				}));
+				setSize("visible");
 			}
 		} else {
 			setMounted(true);
@@ -140,7 +147,7 @@ const Sheet = ({ children, onClose, onClick, isModal, ...props }) => {
 					{...props}
 				>
 					<Background onClick={preventDefaultClick()} />
-					<Body ref={bodyRef}>
+					<Body ref={bodyRef} className={`sz-${size}`}>
 						<slot name="dynamic-sheet-content">{children}</slot>
 					</Body>
 				</MotionContainer>
