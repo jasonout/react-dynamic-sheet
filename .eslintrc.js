@@ -31,6 +31,7 @@ module.exports = {
 		// See: https://github.com/benmosher/eslint-plugin-import/issues/496
 		"import/no-extraneous-dependencies": 0,
 		"no-console": ["warn"],
+		"react/jsx-filename-extension": 0,
 		"no-unused-vars": ["error", { ignoreRestSiblings: true }],
 		"no-param-reassign": 0,
 		"react/no-danger": 0,

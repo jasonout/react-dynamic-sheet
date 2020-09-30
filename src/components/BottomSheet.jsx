@@ -7,14 +7,14 @@ import { componentWillAppendToBody } from "react-append-to-body";
 
 import { ChildrenProps } from "@/constants/common-prop-types";
 import Base from "@/components/common/Base";
-import Overlay from "@/components/common/Overlay";
+// import Overlay from "@/components/common/Overlay";
 
 import { Container, Body, Background } from "./styles/sheet";
 
 const MotionContainer = motion.custom(Container);
 
 // Variants and sheet behaviour will change based on the size of the body relative to the viewport
-const Sheet = ({ children, onClose, onClick, ...props }) => {
+const Sheet = ({ children, onClose, onClick, isModal, ...props }) => {
 	const [isExpandable, setExpandable] = useState(false);
 	const [isExpanded, setExpanded] = useState(false);
 	const [mounted, setMounted] = useState(false);
@@ -27,6 +27,9 @@ const Sheet = ({ children, onClose, onClick, ...props }) => {
 		},
 		visible: {
 			y: 0
+		},
+		small: {
+			y: "80%"
 		}
 	};
 
@@ -44,6 +47,9 @@ const Sheet = ({ children, onClose, onClick, ...props }) => {
 			},
 			expand: {
 				y: bodyRect.height - (window.innerHeight - 50)
+			},
+			small: {
+				y: bodyRect.height - 80
 			}
 		};
 
@@ -77,8 +83,14 @@ const Sheet = ({ children, onClose, onClick, ...props }) => {
 					// Should be able to close from expanded position if big drag
 					(isExpanded ? info.velocity.y >= 20 && info.point.y > 100 : true)
 				) {
-					controls.start("hidden");
-					onClose();
+					if (!isModal) {
+						controls.start("hidden");
+						onClose();
+					} else {
+						controls.start("small");
+					}
+				} else if (shouldClose) {
+					controls.start("small");
 				} else {
 					controls.start("visible");
 				}
@@ -109,37 +121,30 @@ const Sheet = ({ children, onClose, onClick, ...props }) => {
 
 	return (
 		<Base>
-			<Overlay
-				sx={{
-					overflow: "hidden !important"
-				}}
-				onClick={onClose}
-			>
-				<FixedBottom>
-					<MotionContainer
-						sx={{
-							color: "text",
-							bg: "white"
-						}}
-						drag="y"
-						onDragEnd={onDragEnd}
-						dragConstraints={dragConstraints}
-						dragPropagation
-						variants={variants}
-						initial="hidden"
-						animate={controls}
-						exit="hidden"
-						transition={{ type: "spring", damping: 40, stiffness: 400 }}
-						onClick={preventDefaultClick(onClick)}
-						{...props}
-					>
-						<Background onClick={preventDefaultClick()} />
-						<Body ref={bodyRef}>
-							<slot name="dynamic-sheet-content">{children}</slot>
-						</Body>
-					</MotionContainer>
-				</FixedBottom>
-			</Overlay>
+			<FixedBottom>
+				<MotionContainer
+					sx={{
+						color: "text",
+						bg: "white"
+					}}
+					drag="y"
+					onDragEnd={onDragEnd}
+					dragConstraints={dragConstraints}
+					dragPropagation
+					variants={variants}
+					initial="hidden"
+					animate={controls}
+					exit="hidden"
+					transition={{ type: "tween", ease: "easeInOut" }}
+					onClick={preventDefaultClick(onClick)}
+					{...props}
+				>
+					<Background onClick={preventDefaultClick()} />
+					<Body ref={bodyRef}>
+						<slot name="dynamic-sheet-content">{children}</slot>
+					</Body>
+				</MotionContainer>
+			</FixedBottom>
 		</Base>
 	);
 };
@@ -151,11 +156,13 @@ const BottomSheet = ({ isOpen, ...props }) => (
 Sheet.propTypes = {
 	children: ChildrenProps.isRequired,
 	onClose: PropTypes.func.isRequired,
-	onClick: PropTypes.func
+	onClick: PropTypes.func,
+	isModal: PropTypes.bool
 };
 
 Sheet.defaultProps = {
-	onClick() {}
+	onClick() {},
+	isModal: false
 };
 
 BottomSheet.propTypes = {

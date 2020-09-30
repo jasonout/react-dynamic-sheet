@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import styled from "@emotion/styled";
+import styled from "styled-components";
 import CloseIcon from "react-feather/dist/icons/x";
 
 const Button = styled.button`
