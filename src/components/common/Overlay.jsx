@@ -2,10 +2,11 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ChildrenProps } from "@/constants/common-prop-types";
 import { Overlay as StyledOverlay } from "@/components/styles/common";
+import PropTypes from "prop-types";
 
 const MotionOverlay = motion.custom(StyledOverlay);
 
-const Overlay = React.forwardRef(({ children, ...props }, ref) => {
+const Overlay = React.forwardRef(({ children, type, ...props }, ref) => {
 	return (
 		<MotionOverlay
 			ref={ref}
@@ -15,7 +16,8 @@ const Overlay = React.forwardRef(({ children, ...props }, ref) => {
 					pointerEvents: "none"
 				},
 				visible: {
-					backgroundColor: "rgba(0, 0, 0, 0.8)",
+					backgroundColor:
+						type === "menu" ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.8)",
 					pointerEvents: "auto"
 				}
 			}}
@@ -31,7 +33,12 @@ const Overlay = React.forwardRef(({ children, ...props }, ref) => {
 });
 
 Overlay.propTypes = {
-	children: ChildrenProps.isRequired
+	children: ChildrenProps.isRequired,
+	type: PropTypes.string
+};
+
+Overlay.defaultProps = {
+	type: "modal"
 };
 
 export default Overlay;

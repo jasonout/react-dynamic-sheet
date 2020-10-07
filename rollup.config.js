@@ -14,18 +14,28 @@ import pkg from "./package.json";
 
 const input = "./src/index.js";
 const extensions = [".ts", ".tsx", ".js", ".jsx", ".json"];
-const codes = [
-	"THIS_IS_UNDEFINED",
-	"MISSING_GLOBAL_NAME",
-	"CIRCULAR_DEPENDENCY"
-];
 const minifyExtension = pathToFile => pathToFile.replace(/\.js$/, ".min.js");
-const discardWarning = warning => {
-	if (codes.includes(warning.code)) {
-		return;
-	}
 
-	console.error(warning);
+const externalModules = [
+	"dns",
+	"fs",
+	"path",
+	"url",
+	"react-is",
+	"styled-components",
+	"react",
+	"react-dom"
+];
+
+if (pkg.peerDependencies)
+	externalModules.push(...Object.keys(pkg.peerDependencies));
+if (pkg.dependencies) externalModules.push(...Object.keys(pkg.dependencies));
+
+const externalPredicate = new RegExp(`^(${externalModules.join("|")})($|/)`);
+
+const isExternal = id => {
+	if (id === "babel-plugin-transform-async-to-promises/helpers") return false;
+	return externalPredicate.test(id);
 };
 
 const plugins = [
@@ -38,7 +48,7 @@ const plugins = [
 		extensions
 	}),
 	external({
-		includeDependencies: true
+		includeDependencies: false
 	}),
 	resolve({
 		browser: true,
@@ -75,12 +85,7 @@ export default [
 		output: {
 			file: pkg.browser,
 			format: "umd",
-			name: "reactDynamicSheet",
-			globals: {
-				react: "React",
-				"@emotion/styled": "styled",
-				"@emotion/core": "core"
-			}
+			name: "reactDynamicSheet"
 		},
 		plugins
 	},
@@ -88,12 +93,7 @@ export default [
 		output: {
 			file: minifyExtension(pkg.browser),
 			format: "umd",
-			name: "reactDynamicSheet",
-			globals: {
-				react: "React",
-				"@emotion/styled": "styled",
-				"@emotion/core": "core"
-			}
+			name: "reactDynamicSheet"
 		},
 		plugins: [...plugins, terser()]
 	},
@@ -117,7 +117,7 @@ export default [
 	}
 ].map(conf => ({
 	input,
-	onwarn: discardWarning,
+	external: isExternal,
 	treeshake: true,
 	...conf
 }));

@@ -8,6 +8,10 @@ const GlobalStyle = createGlobalStyle`
 	${modernNormalize}
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+
+	* {
+		box-sizing: border-box;
+	}
 `;
 
 const Encapsulate = ({ style, children, ...rest }) => {

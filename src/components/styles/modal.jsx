@@ -20,6 +20,7 @@ export const Container = styled.div`
 
 export const Body = styled.div`
 	position: relative;
+	box-sizing: content-box;
 	display: flex;
 	flex-direction: row;
 	align-items: stretch;

@@ -11,7 +11,8 @@ const DynamicSheet = ({
 	isOpen,
 	onClose,
 	confirmClose,
-	confirmCloseMessage
+	confirmCloseMessage,
+	type
 }) => {
 	const isMobile = window.innerWidth < 450;
 
@@ -47,14 +48,14 @@ const DynamicSheet = ({
 
 	if (isMobile) {
 		return (
-			<BottomSheet isOpen={isOpen} onClose={abort}>
+			<BottomSheet isOpen={isOpen} onClose={abort} type={type}>
 				{children}
 			</BottomSheet>
 		);
 	}
 
 	return (
-		<Modal isOpen={isOpen} onClose={abort}>
+		<Modal isOpen={isOpen} onClose={abort} type={type}>
 			{children}
 		</Modal>
 	);
@@ -65,14 +66,16 @@ DynamicSheet.propTypes = {
 	isOpen: PropTypes.bool,
 	onClose: PropTypes.func,
 	confirmClose: PropTypes.bool,
-	confirmCloseMessage: PropTypes.string
+	confirmCloseMessage: PropTypes.string,
+	type: PropTypes.string
 };
 
 DynamicSheet.defaultProps = {
 	isOpen: false,
 	onClose() {},
 	confirmClose: false,
-	confirmCloseMessage: "Are you sure you would like to abort the checkout?"
+	confirmCloseMessage: "Are you sure you would like to abort the checkout?",
+	type: "modal"
 };
 
 export default DynamicSheet;
