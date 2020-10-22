@@ -128,7 +128,7 @@
     }
   },
   "lint-staged": {
-    "**/*.+(js|jsx)": [
+    "(src|stories)/*.+(js|jsx)": [
       "yarn lint --fix",
       "git add"
     ],

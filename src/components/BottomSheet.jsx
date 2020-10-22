@@ -10,7 +10,7 @@ import { ChildrenProps } from "@/constants/common-prop-types";
 import Base from "@/components/common/Base";
 import Overlay from "@/components/common/Overlay";
 
-import { Container, Body, Background } from "./styles/sheet";
+import { Container, Body, Background, CloseButton } from "./styles/sheet";
 
 const MotionContainer = motion.custom(Container);
 
@@ -85,6 +85,7 @@ const Sheet = ({
 	snapPoints = SnapPointCollections.DefaultSheet,
 	onClick,
 	isModal,
+	showClose,
 	...props
 }) => {
 	const [isExpandable, setExpandable] = useState(false);
@@ -96,7 +97,10 @@ const Sheet = ({
 
 	let variants = {
 		hidden: {
-			y: "200%"
+			y: window && window.innerHeight ? window.innerHeight : "200%"
+		},
+		visible: {
+			y: 0
 		}
 	};
 
@@ -133,6 +137,15 @@ const Sheet = ({
 		console.log("woot:", dragConstraints);
 		console.log(bodyRect.height, window.innerHeight);
 		*/
+	} else if (bodyRef.current) {
+		const bodyRect = bodyRef.current.getBoundingClientRect();
+		variants = {
+			...variants,
+			// Convert to a pixel value for smooth transition
+			hidden: {
+				y: bodyRect.height * 2
+			}
+		};
 	}
 
 	const preventDefaultClick = (clickHandler = () => {}) => e => {
@@ -145,16 +158,36 @@ const Sheet = ({
 
 	const onDrag = throttle(
 		(event, info) => {
-			const mode = snapPointsManager.getModeStateFromPixel(info.point.y);
+			if (!snapPointsManager) {
+				return;
+			}
+
+			if (size === "full") {
+				const body = bodyRef.current.childNodes[0].childNodes[0];
+				body.scrollTop -= info.delta.y;
+				return;
+			}
+
+			const top = bodyRef.current
+				? bodyRef.current.getBoundingClientRect().top
+				: info.point.y;
+			const mode = snapPointsManager.getModeStateFromPixel(top);
+
 			if (mode.closestSnap !== size) {
 				setSize(mode.closestSnap);
 			}
 		},
-		300,
+		10,
 		{
 			trailing: false
 		}
 	);
+
+	const close = () => {
+		controls.start("hidden");
+		setSize("hidden");
+		onClose();
+	};
 
 	const onDragEnd = debounce(
 		(event, info) => {
@@ -164,9 +197,40 @@ const Sheet = ({
 				(info.velocity.y >= 0 && info.point.y > 45);
 			const shouldExpand = info.velocity.y <= 0; */
 
+			if (!snapPointsManager) {
+				const shouldClose =
+					(info.velocity.y > 20 && info.point.y > 0) ||
+					(info.velocity.y >= 0 && info.point.y > 45);
+				// const shouldExpand = info.velocity.y <= 0;
+
+				if (isModal || type === "menu") {
+					return;
+				}
+
+				if (shouldClose) {
+					controls.start("hidden");
+					setSize("hidden");
+					onClose();
+				}
+			}
+
+			const top = bodyRef.current
+				? bodyRef.current.getBoundingClientRect().top
+				: info.point.y;
 			const modeState = snapPointsManager.getModeStateFromPixel(
-				info.point.y + info.velocity.y * 0.75
+				top + info.velocity.y
 			);
+
+			const body =
+				bodyRef.current && bodyRef.current.childNodes[0].childNodes[0];
+
+			if (body) {
+				if (size === "full" && modeState.closestSnap === "full") {
+					body.scrollTo(0, body.scrollTop - info.velocity.y);
+				} else if (modeState.closestSnap !== "full") {
+					body.scrollTo(0, 0);
+				}
+			}
 
 			setSize(modeState.closestSnap);
 			controls.start(modeState.closestSnap);
@@ -230,17 +294,30 @@ const Sheet = ({
 				controls.start(() => ({
 					y: bodyRect.height - window.innerHeight / 2
 				}));
-				setSize("visible");
+			} else {
+				controls.start(() => ({
+					y: 0
+				}));
 			}
+			setSize("visible");
 		} else {
 			setMounted(true);
 		}
 	}, [controls, mounted]);
 
 	const overlayOnClick = {};
+	const motionOptions = {};
 
 	if (type === "menu") {
 		overlayOnClick.onClick = onClose;
+
+		motionOptions.dragTransition = {
+			damping: 100,
+			stiffness: 500
+		};
+
+		dragConstraints.top = 0;
+		dragConstraints.bottom = 0;
 	}
 
 	return (
@@ -261,6 +338,7 @@ const Sheet = ({
 						}}
 						drag="y"
 						dragElastic={0.005}
+						{...motionOptions}
 						onDrag={onDrag}
 						onDragEnd={onDragEnd}
 						dragConstraints={dragConstraints}
@@ -280,6 +358,11 @@ const Sheet = ({
 							$isExpandable={isExpandable}
 						>
 							<slot name="dynamic-sheet-content">{children}</slot>
+							{showClose && !isModal ? (
+								<CloseButton className="close-btn" onClick={close}>
+									X
+								</CloseButton>
+							) : null}
 						</Body>
 					</MotionContainer>
 				</FixedBottom>
@@ -299,6 +382,7 @@ Sheet.propTypes = {
 	onClose: PropTypes.func.isRequired,
 	onClick: PropTypes.func,
 	isModal: PropTypes.bool,
+	showClose: PropTypes.bool,
 	type: PropTypes.string,
 	snapPoints: PropTypes.arrayOf(PropTypes.object)
 };
@@ -306,6 +390,7 @@ Sheet.propTypes = {
 Sheet.defaultProps = {
 	onClick() {},
 	isModal: false,
+	showClose: false,
 	type: "modal",
 	snapPoints: SnapPointCollections.DefaultSheet
 };

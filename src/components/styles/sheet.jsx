@@ -16,7 +16,27 @@ export const Container = styled.div`
 
 	.type-menu & {
 		background-color: unset;
+		border-top: 0;
+		box-shadow: none;
+		backdrop-filter: none;
+		opacity: 0.945;
 	}
+`;
+
+export const CloseButton = styled.div`
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	border-radius: 50%;
+	background-color: rgba(0, 0, 0, 0.25);
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-content: center;
+	align-items: center;
+	justify-content: center;
+	text-transform: lowercase;
+	color: var(--colors-text, #fff);
 `;
 
 export const Background = styled.div`
@@ -31,7 +51,7 @@ export const Background = styled.div`
 
 export const Body = styled.div`
 	position: relative;
-	padding: 30px 12px calc(30px + env(safe-area-inset-bottom, 0px)) 12px;
+	padding: 30px 8px calc(30px + env(safe-area-inset-bottom, 0px)) 8px;
 	overflow: auto;
 	z-index: 5;
 	position: relative;
@@ -58,8 +78,25 @@ export const Body = styled.div`
 		outline: 0;
 	}
 
+	& [name="dynamic-sheet-content"] > *:first-child {
+		padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+		top: 30px;
+		right: 0px;
+		left: 0px;
+		max-height: calc(100vh - 96px);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		overflow-y: scroll !important;
+	}
+
 	.type-menu & {
 		min-height: unset;
+		padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px) !important;
+
+		& [name="dynamic-sheet-content"] > *:first-child {
+			padding-bottom: unset;
+		}
 
 		:before {
 			display: none;

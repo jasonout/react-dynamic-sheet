@@ -13,11 +13,13 @@ const Overlay = React.forwardRef(({ children, type, ...props }, ref) => {
 			variants={{
 				hidden: {
 					backgroundColor: "rgba(0, 0, 0, 0)",
+					opacity: 0,
 					pointerEvents: "none"
 				},
 				visible: {
 					backgroundColor:
-						type === "menu" ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.8)",
+						type === "menu" ? "rgba(0, 0, 0, 0.35)" : "rgba(0, 0, 0, 0.7)",
+					opacity: 1,
 					pointerEvents: "auto"
 				}
 			}}
